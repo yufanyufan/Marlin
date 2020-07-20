@@ -54,7 +54,23 @@ public:
   // Variable access.
   static void WriteVariable(uint16_t adr, const void* values, uint8_t valueslen, bool isstr=false);
   static void WriteVariablePGM(uint16_t adr, const void* values, uint8_t valueslen, bool isstr=false);
+  static void WriteVariable(uint16_t adr, int16_t value);
   static void WriteVariable(uint16_t adr, uint16_t value);
+  static void WriteVariable(uint16_t adr, uint8_t value);
+  static void WriteVariable(uint16_t adr, int8_t value);
+  static void WriteVariable(uint16_t adr, long value);
+
+  // Utility functions for bridging ui_api and dbus
+  template<typename T, float(*Getter)(const T), T selector, typename WireType=uint16_t>
+  static void SetVariable(DGUS_VP_Variable &var) {
+    WriteVariable(var.VP, (WireType)Getter(selector));
+  }
+
+  template<typename T, void(*Setter)(const float V, const T), T selector>
+  static void GetVariable(DGUS_VP_Variable &var, void *val_ptr) {
+    uint16_t newvalue = swap16(*(uint16_t*)val_ptr);
+    Setter(newvalue, selector);
+  }
 
   // Until now I did not need to actively read from the display. That's why there is no ReadVariable
   // (I extensively use the auto upload of the display)
@@ -80,6 +96,7 @@ private:
   static void WritePGM(const char str[], uint8_t len);
   static void ProcessRx();
 
+  static inline uint16_t swap16(const uint16_t value) { return (value & 0xffU) << 8U | (value >> 8U); }
   static rx_datagram_state_t rx_datagram_state;
   static uint8_t rx_datagram_len;
   static bool Initialized, no_reentrance;

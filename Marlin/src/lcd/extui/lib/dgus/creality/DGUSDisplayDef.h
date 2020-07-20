@@ -58,7 +58,7 @@ constexpr uint16_t VP_PrinterSize = 0x1074;
 
 // Temperature on main screen
 constexpr uint16_t VP_MAIN_T_E0_Is = 0x1036;  // 4 Byte Integer
-constexpr uint16_t VP_MAIN_T_E0_Set = 0x1034; // 2 Byte Integer
+constexpr uint16_t VP_T_E0_Set = 0x1034; // 2 Byte Integer
 constexpr uint16_t VP_MAIN_T_Bed_Is = 0x103C;  // 4 Byte Integer
 constexpr uint16_t VP_MAIN_T_Bed_Set = 0x103A; // 2 Byte Integer
 constexpr uint16_t VP_MAIN_SCREEN = 0x1002;

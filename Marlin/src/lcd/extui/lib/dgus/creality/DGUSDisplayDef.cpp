@@ -252,16 +252,16 @@ const struct DGUS_VP_Variable ListOfVP[] PROGMEM = {
     {.VP = VP_PrinterSize, .memadr = (void *)PrinterSize, .size = sizeof(PrinterSize), .set_by_display_handler = nullptr, .send_to_display_handler = &DGUSScreenHandler::DGUSLCD_SendStringToDisplayPGM},
 
     VPHELPER(VP_T_E0_Is, nullptr, nullptr, 
-             (&dgusdisplay.SetVariable<extruder_t, getActualTemp_celsius, E0, long>)),
+             (&dgusdisplay.SetVariable<extruder_t, getActualTemp_celsius, E0>)),
     VPHELPER(VP_T_E0_Set, nullptr,
             (&dgusdisplay.GetVariable<extruder_t, setTargetTemp_celsius, E0>),
             (&dgusdisplay.SetVariable<extruder_t, getTargetTemp_celsius, E0>)),
 
     VPHELPER(VP_T_Bed_Is, nullptr, nullptr, 
-             (&dgusdisplay.SetVariable<heater_t, getActualTemp_celsius, H0, long>)),
+             (&dgusdisplay.SetVariable<heater_t, getActualTemp_celsius, BED>)),
     VPHELPER(VP_T_Bed_Set, nullptr,
-            (&dgusdisplay.GetVariable<heater_t, setTargetTemp_celsius, H0>),
-            (&dgusdisplay.SetVariable<heater_t, getTargetTemp_celsius, H0>)),
+            (&dgusdisplay.GetVariable<heater_t, setTargetTemp_celsius, BED>),
+            (&dgusdisplay.SetVariable<heater_t, getTargetTemp_celsius, BED>)),
 
     VPHELPER(VP_CONFIRMED, nullptr, DGUSScreenHandler::ScreenConfirmedOK, nullptr),
     VPHELPER(VP_MAIN_SCREEN, nullptr, MainScreenControl, nullptr),

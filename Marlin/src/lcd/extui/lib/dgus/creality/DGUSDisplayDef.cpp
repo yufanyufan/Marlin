@@ -121,11 +121,11 @@ const char PrinterSize[] PROGMEM = "350 x 350 x 400";
 const char MachineName[] PROGMEM = CUSTOM_MACHINE_NAME;
 
 // Helper to define a DGUS_VP_Variable for common use cases.
-#define VPHELPER(VPADR, RXFPTR, TXFPTR ) { .VP=VPADR, \
+#define VPHELPER(VPADR, RXFPTR, TXFPTR ) { .VP=VPADR, .memadr=nullptr, .size=sizeof(nullptr),\
     .set_by_display_handler = RXFPTR, .send_to_display_handler = TXFPTR }
 
 // Helper to define a DGUS_VP_Variable when the sizeo of the var cannot be determined automaticalyl (eg. a string)
-#define VPHELPER_STR(VPADR, VPADRVAR, STRLEN, RXFPTR, TXFPTR ) { .VP=VPADR, .size=STRLEN, \
+#define VPHELPER_STR(VPADR, VPADRVAR, STRLEN, RXFPTR, TXFPTR ) { .VP=VPADR, .memadr=VPADRVAR, .size=STRLEN, \
   .set_by_display_handler = RXFPTR, .send_to_display_handler = TXFPTR }
 
 void MainScreenControl(DGUS_VP_Variable &var, void *val_ptr) {
@@ -181,25 +181,10 @@ void LevelingScreenControl(DGUS_VP_Variable &var, void *val_ptr) {
     }
 }
 
-void MoveX(DGUS_VP_Variable &var, void *val_ptr) {
-  unsigned char* bytes = (unsigned char*)val_ptr;
-  ExtUI::setAxisPosition_mm(((bytes[0] << 8) + bytes[1]) / 10., ExtUI::X);
-}
-
-void MoveY(DGUS_VP_Variable &var, void *val_ptr) {
-  unsigned char* bytes = (unsigned char*)val_ptr;
-  ExtUI::setAxisPosition_mm(((bytes[0] << 8) + bytes[1]) / 10., ExtUI::Y);
-}
-
-void MoveZ(DGUS_VP_Variable &var, void *val_ptr) {
-  unsigned char* bytes = (unsigned char*)val_ptr;
-  ExtUI::setAxisPosition_mm(((bytes[0] << 8) + bytes[1]) / 10., ExtUI::Z);
-}
-
 void HomeXY(DGUS_VP_Variable &var, void *val_ptr) {
   ExtUI::injectCommands_P((PSTR("G28 XY")));
-  dgusdisplay.WriteVariable(VP_MOVE_X, (uint16_t)X_HOME_POS * 10);
-  dgusdisplay.WriteVariable(VP_MOVE_Y, (uint16_t)Y_HOME_POS * 10);
+  dgusdisplay.WriteVariable(VP_MOVE_X, (uint16_t)(X_HOME_POS * 10));
+  dgusdisplay.WriteVariable(VP_MOVE_Y, (uint16_t)(Y_HOME_POS * 10));
 }
 
 void ShowAdjust(DGUS_VP_Variable &var, void *val_ptr) {
@@ -245,65 +230,58 @@ void BedMeasure(DGUS_VP_Variable &var, void *val_ptr) {
 }
 
 const struct DGUS_VP_Variable ListOfVP[] PROGMEM = {
-    // Helper to detect touch events
+  // Helper to detect touch events
 
-    {.VP = VP_MARLIN_VERSION, .set_by_display_handler = nullptr, .send_to_display_handler = &DGUSScreenHandler::DGUSLCD_SendStringToDisplayPGM},
-    {.VP = VP_MACHINE_NAME, .set_by_display_handler = nullptr, .send_to_display_handler = &DGUSScreenHandler::DGUSLCD_SendStringToDisplayPGM},
-    {.VP = VP_PrinterSize, .set_by_display_handler = nullptr, .send_to_display_handler = &DGUSScreenHandler::DGUSLCD_SendStringToDisplayPGM},
+  {.VP = VP_MARLIN_VERSION, .memadr = (void *)MarlinVersion, .size = VP_MARLIN_VERSION_LEN, .set_by_display_handler = nullptr, .send_to_display_handler = &DGUSScreenHandler::DGUSLCD_SendStringToDisplayPGM},
+  {.VP = VP_MACHINE_NAME, .memadr = (void *)MachineName, .size = VP_MACHINE_NAME_LEN, .set_by_display_handler = nullptr, .send_to_display_handler = &DGUSScreenHandler::DGUSLCD_SendStringToDisplayPGM},
+  {.VP = VP_PrinterSize, .memadr = (void *)PrinterSize, .size = sizeof(PrinterSize), .set_by_display_handler = nullptr, .send_to_display_handler = &DGUSScreenHandler::DGUSLCD_SendStringToDisplayPGM},
 
-    VPHELPER(VP_T_E0_Is, nullptr, 
-            (&dgusdisplay.SetVariable<extruder_t, getActualTemp_celsius, E0>)),
-    VPHELPER(VP_T_E0_Set,
-            (&dgusdisplay.GetVariable<extruder_t, setTargetTemp_celsius, E0>),
-            (&dgusdisplay.SetVariable<extruder_t, getTargetTemp_celsius, E0>)),
+  VPHELPER(VP_T_E0_Is, nullptr, 
+          (&dgusdisplay.SetVariable<extruder_t, getActualTemp_celsius, E0>)),
+  VPHELPER(VP_T_E0_Set,
+          (&dgusdisplay.GetVariable<extruder_t, setTargetTemp_celsius, E0>),
+          (&dgusdisplay.SetVariable<extruder_t, getTargetTemp_celsius, E0>)),
 
-    VPHELPER(VP_T_Bed_Is, nullptr, 
-             (&dgusdisplay.SetVariable<heater_t, getActualTemp_celsius, BED>)),
-    VPHELPER(VP_T_Bed_Set, 
-            (&dgusdisplay.GetVariable<heater_t, setTargetTemp_celsius, BED>),
-            (&dgusdisplay.SetVariable<heater_t, getTargetTemp_celsius, BED>)),
+  VPHELPER(VP_T_Bed_Is, nullptr, 
+            (&dgusdisplay.SetVariable<heater_t, getActualTemp_celsius, BED>)),
+  VPHELPER(VP_T_Bed_Set, 
+          (&dgusdisplay.GetVariable<heater_t, setTargetTemp_celsius, BED>),
+          (&dgusdisplay.SetVariable<heater_t, getTargetTemp_celsius, BED>)),
 
-    VPHELPER(VP_CONFIRMED, DGUSScreenHandler::ScreenConfirmedOK, nullptr),
-    VPHELPER(VP_MAIN_SCREEN, MainScreenControl, nullptr),
-    VPHELPER(VP_SETTING_SCREEN, SettingScreenControl, nullptr),
-    VPHELPER(VP_LEVELING_SCREEN, LevelingScreenControl, nullptr),
-    VPHELPER(VP_SETTEMP_SCREEN, SetTempScreenControl, nullptr),
-    VPHELPER(VP_HOME_XY, HomeXY, nullptr),
-    VPHELPER(VP_BED_AUTO_MEASURE, BedMeasure, nullptr),
+  VPHELPER(VP_CONFIRMED, DGUSScreenHandler::ScreenConfirmedOK, nullptr),
+  VPHELPER(VP_MAIN_SCREEN, MainScreenControl, nullptr),
+  VPHELPER(VP_SETTING_SCREEN, SettingScreenControl, nullptr),
+  VPHELPER(VP_LEVELING_SCREEN, LevelingScreenControl, nullptr),
+  VPHELPER(VP_SETTEMP_SCREEN, SetTempScreenControl, nullptr),
+  VPHELPER(VP_HOME_XY, HomeXY, nullptr),
+  VPHELPER(VP_BED_AUTO_MEASURE, BedMeasure, nullptr),
 
-    VPHELPER(VP_MOVE_X,
-            (&dgusdisplay.GetVariable<axis_t, setAxisPosition_mm, X, 10>),
-            (&dgusdisplay.SetVariable<axis_t, getAxisPosition_mm, X, 10>)),
-    VPHELPER(VP_MOVE_Y,
-            (&dgusdisplay.GetVariable<axis_t, setAxisPosition_mm, Y, 10>),
-            (&dgusdisplay.SetVariable<axis_t, getAxisPosition_mm, Y, 10>)),
-    VPHELPER(VP_MOVE_Z,
-            (&dgusdisplay.GetVariable<axis_t, setAxisPosition_mm, Z, 10>),
-            (&dgusdisplay.SetVariable<axis_t, getAxisPosition_mm, Z, 10>)),          
-            
-    VPHELPER(VP_PROGRESS, nullptr, DGUSScreenHandler::DGUSLCD_SendPrintProgressToDisplay),
-    //VPHELPER(VP_TIME_HOUR, &current_position.z, nullptr, DGUSScreenVariableHandler::DGUSLCD_SendFloatAsLongValueToDisplay<2>),
-    //VPHELPER(VP_TIME_HOUR, &current_position.z, nullptr, DGUSScreenVariableHandler::DGUSLCD_SendFloatAsLongValueToDisplay<2>),
+  VPHELPER(VP_MOVE_X,
+          (&dgusdisplay.GetVariable<axis_t, setAxisPosition_mm, X, 10>),
+          (&dgusdisplay.SetVariable<axis_t, getAxisPosition_mm, X, 10>)),
+  VPHELPER(VP_MOVE_Y,
+          (&dgusdisplay.GetVariable<axis_t, setAxisPosition_mm, Y, 10>),
+          (&dgusdisplay.SetVariable<axis_t, getAxisPosition_mm, Y, 10>)),
+  VPHELPER(VP_MOVE_Z,
+          (&dgusdisplay.GetVariable<axis_t, setAxisPosition_mm, Z, 10>),
+          (&dgusdisplay.SetVariable<axis_t, getAxisPosition_mm, Z, 10>)),          
+          
+  VPHELPER(VP_PROGRESS, nullptr, DGUSScreenHandler::DGUSLCD_SendPrintProgressToDisplay),
+  //VPHELPER(VP_TIME_HOUR, &current_position.z, nullptr, DGUSScreenVariableHandler::DGUSLCD_SendFloatAsLongValueToDisplay<2>),
+  //VPHELPER(VP_TIME_HOUR, &current_position.z, nullptr, DGUSScreenVariableHandler::DGUSLCD_SendFloatAsLongValueToDisplay<2>),
 
-    VPHELPER(VP_E0_PID_P, nullptr,
-            (&dgusdisplay.SetVariable<extruder_t, getPIDValues_Kp, E0>)),
-    VPHELPER(VP_E0_PID_I, nullptr,
-            (&dgusdisplay.SetVariable<extruder_t, getPIDValues_Ki, E0>)),
-    VPHELPER(VP_E0_PID_D, nullptr,
-            (&dgusdisplay.SetVariable<extruder_t, getPIDValues_Kd, E0>)),
+  VPHELPER(VP_E0_PID_P, nullptr,
+          (&dgusdisplay.SetVariable<extruder_t, getPIDValues_Kp, E0>)),
+  VPHELPER(VP_E0_PID_I, nullptr,
+          (&dgusdisplay.SetVariable<extruder_t, getPIDValues_Ki, E0>)),
+  VPHELPER(VP_E0_PID_D, nullptr,
+          (&dgusdisplay.SetVariable<extruder_t, getPIDValues_Kd, E0>)),
 
+  VPHELPER(VP_ADJUST_BTN, ShowAdjust, nullptr),
 
-    VPHELPER(VP_ADJUST_BTN, ShowAdjust, nullptr),
+  VPHELPER(VP_TEMP_ALL_OFF, &DGUSScreenHandler::HandleAllHeatersOff, nullptr),
 
-    VPHELPER(VP_TEMP_ALL_OFF, &DGUSScreenHandler::HandleAllHeatersOff, nullptr),
-
-    VPHELPER(VP_MOTOR_LOCK_UNLOK, &DGUSScreenHandler::HandleMotorLockUnlock, nullptr),
-
-    // Messages for the User, shared by the popup and the kill screen. They cant be autouploaded as we do not buffer content.
-  { .VP = VP_MSGSTR1, .set_by_display_handler = nullptr, .send_to_display_handler = &ScreenHandler.DGUSLCD_SendStringToDisplayPGM },
-  { .VP = VP_MSGSTR2, .set_by_display_handler = nullptr, .send_to_display_handler = &ScreenHandler.DGUSLCD_SendStringToDisplayPGM },
-  { .VP = VP_MSGSTR3, .set_by_display_handler = nullptr, .send_to_display_handler = &ScreenHandler.DGUSLCD_SendStringToDisplayPGM },
-  { .VP = VP_MSGSTR4, .set_by_display_handler = nullptr, .send_to_display_handler = &ScreenHandler.DGUSLCD_SendStringToDisplayPGM },
+  VPHELPER(VP_MOTOR_LOCK_UNLOK, &DGUSScreenHandler::HandleMotorLockUnlock, nullptr),
 
   VPHELPER(0, 0, 0), // must be last entry.
 };

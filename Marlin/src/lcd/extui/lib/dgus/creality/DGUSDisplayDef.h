@@ -57,15 +57,14 @@ constexpr uint8_t VP_MACHINE_NAME_LEN = sizeof(CUSTOM_MACHINE_NAME);   // there 
 constexpr uint16_t VP_PrinterSize = 0x1074;
 
 // Temperature on main screen
-constexpr uint16_t VP_MAIN_T_E0_Is = 0x1036;  // 4 Byte Integer
+constexpr uint16_t VP_T_E0_Is = 0x1036;  // 4 Byte Integer
 constexpr uint16_t VP_T_E0_Set = 0x1034; // 2 Byte Integer
-constexpr uint16_t VP_MAIN_T_Bed_Is = 0x103C;  // 4 Byte Integer
-constexpr uint16_t VP_MAIN_T_Bed_Set = 0x103A; // 2 Byte Integer
+constexpr uint16_t VP_T_Bed_Is = 0x103C;  // 4 Byte Integer
+constexpr uint16_t VP_T_Bed_Set = 0x103A; // 2 Byte Integer
 constexpr uint16_t VP_MAIN_SCREEN = 0x1002;
 constexpr uint16_t VP_SETTING_SCREEN = 0x103E;
 constexpr uint16_t VP_LEVELING_SCREEN = 0x1040;
 constexpr uint16_t VP_SETTEMP_SCREEN = 0x1032;
-
 
 
 // Actual Position
@@ -74,16 +73,24 @@ constexpr uint16_t VP_MOVE_Y = 0x104A;
 constexpr uint16_t VP_MOVE_Z = 0x104C;
 constexpr uint16_t VP_HOME_XY = 0x1046;
 
-constexpr uint16_t VP_REAL_X = 0x1048;  // 2 Byte Integer
-constexpr uint16_t VP_REAL_Y = 0x104A;
-constexpr uint16_t VP_REAL_Z = 0x104C;
 constexpr uint16_t VP_PROGRESS = 0x1016;
 constexpr uint16_t VP_TIME_HOUR = 0x1010;
 constexpr uint16_t VP_TIME_MIN = 0x1012;
 
 // Bed Leveling
-constexpr uint16_t VP_BED_MEASURE = 0x1044;  // 2 Byte Integer
-constexpr uint16_t VP_AutolevelVal = 0x1100;
+constexpr uint16_t VP_BED_AUTO_MEASURE = 0x1044;  // 2 Byte Integer
+constexpr uint16_t VP_BED_MEASUTRMENT = 0x1100;
+
+// PIDs
+constexpr uint16_t VP_E0_PID_P = 0x3700; // at the moment , 2 byte unsigned int , 0~1638.4
+constexpr uint16_t VP_E0_PID_I = 0x3702;
+constexpr uint16_t VP_E0_PID_D = 0x3704;
+constexpr uint16_t VP_BED_PID_P = 0x3710;
+constexpr uint16_t VP_BED_PID_I = 0x3712;
+constexpr uint16_t VP_BED_PID_D = 0x3714;
+
+// Status screen
+constexpr uint16_t VP_ADJUST_BTN = 0x3714;
 
 // Display Memory layout used (T5UID)
 // Except system variables this is arbitrary, just to organize stuff....
@@ -189,41 +196,15 @@ constexpr uint16_t VP_PID_AUTOTUNE_E0 = 0x2410;
 //constexpr uint16_t VP_PID_AUTOTUNE_E5 = 0x241A;
 constexpr uint16_t VP_PID_AUTOTUNE_BED = 0x2420;
 
-
-
 // Place for status messages.
 constexpr uint16_t VP_M117 = 0x3020;
 constexpr uint8_t VP_M117_LEN = 0x20;
 
-// reserved to support up to 6 Extruders:
-//constexpr uint16_t VP_T_E1_Set = 0x3066; // 2 Byte Integer
-//constexpr uint16_t VP_T_E2_Is = 0x3068;  // 4 Byte Integer
-//constexpr uint16_t VP_T_E2_Set = 0x306A; // 2 Byte Integer
-//constexpr uint16_t VP_T_E3_Is = 0x306C;  // 4 Byte Integer
-//constexpr uint16_t VP_T_E3_Set = 0x306E; // 2 Byte Integer
-//constexpr uint16_t VP_T_E4_Is = 0x3070;  // 4 Byte Integer
-//constexpr uint16_t VP_T_E4_Set = 0x3072; // 2 Byte Integer
-//constexpr uint16_t VP_T_E4_Is = 0x3074;  // 4 Byte Integer
-//constexpr uint16_t VP_T_E4_Set = 0x3076; // 2 Byte Integer
-//constexpr uint16_t VP_T_E5_Is = 0x3078;  // 4 Byte Integer
-//constexpr uint16_t VP_T_E5_Set = 0x307A; // 2 Byte Integer
-
-constexpr uint16_t VP_T_Bed_Is = 0x3080;  // 4 Byte Integer
-constexpr uint16_t VP_T_Bed_Set = 0x3082; // 2 Byte Integer
-
 constexpr uint16_t VP_Flowrate_E0 = 0x3090; // 2 Byte Integer
 constexpr uint16_t VP_Flowrate_E1 = 0x3092; // 2 Byte Integer
 
-// reserved for up to 6 Extruders:
-//constexpr uint16_t VP_Flowrate_E2 = 0x3094;
-//constexpr uint16_t VP_Flowrate_E3 = 0x3096;
-//constexpr uint16_t VP_Flowrate_E4 = 0x3098;
-//constexpr uint16_t VP_Flowrate_E5 = 0x309A;
-
 constexpr uint16_t VP_Fan0_Percentage = 0x3100;  // 2 Byte Integer (0..100)
 constexpr uint16_t VP_Fan1_Percentage = 0x33A2;  // 2 Byte Integer (0..100)
-//constexpr uint16_t VP_Fan2_Percentage = 0x33A4;  // 2 Byte Integer (0..100)
-//constexpr uint16_t VP_Fan3_Percentage = 0x33A6;  // 2 Byte Integer (0..100)
 
 constexpr uint16_t VP_Feedrate_Percentage = 0x3102; // 2 Byte Integer (0..100)
 constexpr uint16_t VP_PrintProgress_Percentage = 0x3104; // 2 Byte Integer (0..100)
@@ -282,14 +263,6 @@ constexpr uint16_t VP_E0_STEP_PER_MM = 0x3610;
 //constexpr uint16_t VP_E3_STEP_PER_MM = 0x3616;
 //constexpr uint16_t VP_E4_STEP_PER_MM = 0x3618;
 //constexpr uint16_t VP_E5_STEP_PER_MM = 0x361A;
-
-// PIDs
-constexpr uint16_t VP_E0_PID_P = 0x3700; // at the moment , 2 byte unsigned int , 0~1638.4
-constexpr uint16_t VP_E0_PID_I = 0x3702;
-constexpr uint16_t VP_E0_PID_D = 0x3704;
-constexpr uint16_t VP_BED_PID_P = 0x3710;
-constexpr uint16_t VP_BED_PID_I = 0x3712;
-constexpr uint16_t VP_BED_PID_D = 0x3714;
 
 // Wating screen status
 constexpr uint16_t VP_WAITING_STATUS = 0x3800;

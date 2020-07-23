@@ -225,7 +225,7 @@ void BedMeasure(DGUS_VP_Variable &var, void *val_ptr) {
     if (!ExtUI::isPositionKnown()) {
       ExtUI::injectCommands_P(PSTR("G28"));
     }
-    ExtUI::injectCommands_P(PSTR("G29P1\nG29S1\nG29S0\nG29F0.0\nG29A\nM500"));
+    ExtUI::injectCommands_P(PSTR("G29P1\nG29P3\nG29S1\nG29S0\nG29F0.0\nG29A\nM500"));
   }
 }
 

@@ -57,9 +57,15 @@ namespace ExtUI {
   void onMediaRemoved()  { TERN_(SDSUPPORT, ScreenHandler.SDCardRemoved()); }
 
   void onPlayTone(const uint16_t frequency, const uint16_t duration) {}
-  void onPrintTimerStarted() {}
-  void onPrintTimerPaused() {}
-  void onPrintTimerStopped() {}
+  void onPrintTimerStarted() {
+    ScreenHandler.GotoScreen(DGUSLCD_SCREEN_STATUS);
+  }
+  void onPrintTimerPaused() {
+    ScreenHandler.GotoScreen(DGUSLCD_SCREEN_STATUS_PAUSED);
+  }
+  void onPrintTimerStopped() {
+     ScreenHandler.GotoScreen(DGUSLCD_SCREEN_MAIN);
+ }
   void onFilamentRunout(const extruder_t extruder) {}
 
   void onUserConfirmRequired(const char * const msg) {

@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 
@@ -138,6 +138,10 @@
 #if ENABLED(CASE_LIGHT_MENU) && DISABLED(CASE_LIGHT_NO_BRIGHTNESS)
   #include "../feature/caselight.h"
   #define HAS_CASE_LIGHT_BRIGHTNESS 1
+#endif
+
+#if ENABLED(TOUCH_SCREEN_CALIBRATION)
+  #include "../lcd/tft/touch.h"
 #endif
 
 #pragma pack(push, 1) // No padding between variables
@@ -401,6 +405,13 @@ typedef struct SettingsDataStruct {
   //
   #if HAS_CASE_LIGHT_BRIGHTNESS
     uint8_t case_light_brightness;
+  #endif
+
+  //
+  // TOUCH_SCREEN_CALIBRATION
+  //
+  #if ENABLED(TOUCH_SCREEN_CALIBRATION)
+    touch_calibration_t touch_calibration;
   #endif
 
 } SettingsData;
@@ -1335,6 +1346,13 @@ void MarlinSettings::postprocess() {
     #endif
 
     //
+    // TOUCH_SCREEN_CALIBRATION
+    //
+    #if ENABLED(TOUCH_SCREEN_CALIBRATION)
+      EEPROM_WRITE(touch.calibration);
+    #endif
+
+    //
     // Validate CRC and Data Size
     //
     if (!eeprom_error) {
@@ -2167,6 +2185,14 @@ void MarlinSettings::postprocess() {
         EEPROM_READ(case_light_brightness);
       #endif
 
+      //
+      // TOUCH_SCREEN_CALIBRATION
+      //
+      #if ENABLED(TOUCH_SCREEN_CALIBRATION)
+        _FIELD_TEST(touch.calibration);
+        EEPROM_READ(touch.calibration);
+      #endif
+
       eeprom_error = size_error(eeprom_index - (EEPROM_OFFSET));
       if (eeprom_error) {
         DEBUG_ECHO_START();
@@ -2468,6 +2494,11 @@ void MarlinSettings::reset() {
   // Case Light Brightness
   //
   TERN_(HAS_CASE_LIGHT_BRIGHTNESS, case_light_brightness = CASE_LIGHT_DEFAULT_BRIGHTNESS);
+
+  //
+  // TOUCH_SCREEN_CALIBRATION
+  //
+  TERN_(TOUCH_SCREEN_CALIBRATION, touch.calibration_reset());
 
   //
   // Magnetic Parking Extruder

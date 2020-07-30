@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 #pragma once
@@ -208,7 +208,7 @@
   #endif
 #endif
 
-#if ENABLED(FYSETC_MINI_12864_2_1, FYSETC_242_OLED_12864)
+#if EITHER(FYSETC_MINI_12864_2_1, FYSETC_242_OLED_12864)
   #define LED_CONTROL_MENU
   #define LED_USER_PRESET_STARTUP
   #define LED_COLOR_PRESETS
@@ -249,6 +249,17 @@
 // If platform requires early initialization of watchdog to properly boot
 #if ENABLED(USE_WATCHDOG) && defined(ARDUINO_ARCH_SAM)
   #define EARLY_WATCHDOG 1
+#endif
+
+// Full Touch Screen needs 'tft/xpt2046'
+#if ENABLED(TOUCH_SCREEN)
+  #define HAS_TFT_XPT2046 1
+#endif
+
+// Touch Screen or "Touch Buttons" need XPT2046 pins
+// but they use different components
+#if EITHER(HAS_TFT_XPT2046, HAS_TOUCH_XPT2046)
+  #define NEED_TOUCH_PINS 1
 #endif
 
 // Extensible UI pin mapping for RepRapDiscount

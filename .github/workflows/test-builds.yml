@@ -67,6 +67,7 @@ jobs:
         - BIGTREE_SKR_PRO
         - BIGTREE_GTR_V1_0
         - mks_robin
+        - mks_robin_stm32
         - ARMED
         - FYSETC_S6
         - STM32F070RB_malyan
@@ -105,7 +106,7 @@ jobs:
 
     - name: Install PlatformIO
       run: |
-        pip install -U https://github.com/platformio/platformio-core/archive/master.zip
+        pip install -U https://github.com/platformio/platformio-core/archive/develop.zip
         platformio update
 
     - name: Check out the PR
